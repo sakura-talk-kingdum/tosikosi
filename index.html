@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>2027年まで あと</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f3a92f;
+  --ink: #2a1405;
+  --sub: rgba(42, 20, 5, .68);
+  --line: rgba(42, 20, 5, .2);
+  --accent: #8f1d0e;
+  --f-display: "Dela Gothic One", "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif;
+  --f-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  color-scheme: light;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1e1109; --ink: #f6c25b; --sub: rgba(246, 194, 91, .7);
+    --line: rgba(246, 194, 91, .22); --accent: #ff7a45; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1e1109; --ink: #f6c25b; --sub: rgba(246, 194, 91, .7);
+  --line: rgba(246, 194, 91, .22); --accent: #ff7a45; color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+body {
+  margin: 0; min-height: 100%;
+  background: var(--bg); color: var(--ink);
+  font-family: var(--f-body); font-size: 16px; line-height: 1.7;
+  display: flex; flex-direction: column;
+  padding: 0 clamp(20px, 5vw, 64px);
+  overflow-x: hidden;
+}
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+
+header {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+  padding: 22px 0 14px; border-bottom: 1px solid var(--line);
+  font-size: .9rem; color: var(--sub);
+}
+header time { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+#zone { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+
+main { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 40px 0; }
+h1 { margin: 0 0 8px; font-weight: 500; font-size: clamp(1.05rem, 2.6vw, 1.4rem); letter-spacing: .04em; }
+h1 b { font-family: var(--f-display); font-weight: 400; font-size: 1.5em; margin-right: .1em; }
+
+.count { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 clamp(18px, 3.4vw, 44px); margin: 0; }
+.unit { display: flex; align-items: baseline; gap: .12em; }
+.num {
+  font-family: var(--f-display); font-weight: 400; line-height: 1.08;
+  font-size: clamp(4rem, 17vw, 10.5rem); letter-spacing: -.02em; display: inline-flex;
+}
+.num span { display: inline-block; width: .74em; text-align: center; }
+.num span.tick { animation: tick .32s cubic-bezier(.2, .8, .2, 1); }
+.unit:last-child .num { color: var(--accent); }
+.unit small { font-size: clamp(1rem, 2.6vw, 1.7rem); font-weight: 700; }
+@keyframes tick { from { transform: translateY(.14em); opacity: 0; } to { transform: none; opacity: 1; } }
+
+.progress { margin-top: clamp(40px, 8vw, 80px); max-width: 860px; }
+.progress-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 10px; font-weight: 500; }
+.progress-head output { font-family: var(--f-display); font-size: clamp(1.2rem, 3vw, 1.8rem); font-variant-numeric: tabular-nums; }
+.track { height: 10px; background: var(--line); overflow: hidden; border-radius: 2px; }
+.fill { height: 100%; background: var(--ink); transform-origin: left; transform: scaleX(0); }
+.months { position: relative; height: 26px; margin-top: 6px; font-size: .75rem; color: var(--sub); }
+.months i { position: absolute; top: 0; font-style: normal; padding-left: 4px; border-left: 1px solid var(--line); line-height: 1.5; }
+
+.greeting { display: none; }
+.done .count, .done .progress, .done h1 { display: none; }
+.done .greeting { display: block; }
+.greeting h2 {
+  margin: 0; font-family: var(--f-display); font-weight: 400; line-height: 1.25;
+  font-size: clamp(2.4rem, 9vw, 6.5rem);
+}
+.greeting p { margin: 18px 0 0; font-size: clamp(1rem, 2.4vw, 1.3rem); }
+
+footer { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 0 22px; border-top: 1px solid var(--line); font-size: .85rem; color: var(--sub); }
+
+#fx { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20; }
+#year { cursor: pointer; user-select: none; -webkit-tap-highlight-color: transparent; }
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+  max-width: min(92vw, 520px); padding: 12px 20px; border-radius: 8px;
+  background: var(--ink); color: var(--bg); font-weight: 500; text-align: center;
+  opacity: 0; transform: translate(-50%, 16px); pointer-events: none;
+  transition: opacity .25s, transform .25s;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast b { font-family: var(--f-display); font-weight: 400; font-size: 1.4em; margin-right: .5em; }
+@media (prefers-reduced-motion: reduce) { .num span.tick { animation: none; } }
+</style>
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="toast" id="toast" role="status"></div>
+
+<header>
+  <span id="zone">日本標準時（JST）</span>
+  <time id="clock">----/--/-- --:--:--</time>
+</header>
+
+<main id="stage">
+  <h1 id="lead"><b id="year">2027</b>年1月1日 0時0分0秒まで、あと</h1>
+  <p class="count" id="count" role="timer" aria-live="off">
+    <span class="unit"><span class="num" id="d"></span><small>日</small></span>
+    <span class="unit"><span class="num" id="h"></span><small>時間</small></span>
+    <span class="unit"><span class="num" id="m"></span><small>分</small></span>
+    <span class="unit"><span class="num" id="s"></span><small>秒</small></span>
+  </p>
+
+  <div class="greeting" role="status">
+    <h2>あけましておめでとうございます</h2>
+    <p>2027年が、よい一年になりますように。</p>
+  </div>
+
+  <section class="progress" aria-label="2026年の経過">
+    <div class="progress-head"><span>2026年はここまで進みました</span><output id="pct">0.0000%</output></div>
+    <div class="track"><div class="fill" id="fill"></div></div>
+    <div class="months" id="months"></div>
+  </section>
+</main>
+
+<footer>
+  <span>2026 → 2027</span>
+</footer>
+
+<script>
+(function () {
+  // 既定は日本時間 (UTC+9)。各地域の 2027/1/1 0:00 と 2026/1/1 0:00 を UTC で固定
+  // （JST は現在選択中の時差。名前はそのまま）
+  var ZONES = [
+    ['日本標準時（JST）', 9], ['キリバス（UTC+14）', 14], ['ニュージーランド（UTC+13）', 13],
+    ['シドニー（UTC+11）', 11], ['北京・シンガポール（UTC+8）', 8], ['インド（UTC+5:30）', 5.5],
+    ['ドバイ（UTC+4）', 4], ['ロンドン（UTC+0）', 0], ['ニューヨーク（UTC−5）', -5],
+    ['ロサンゼルス（UTC−8）', -8], ['ハワイ（UTC−10）', -10]
+  ];
+  var zi = 0, JST, START, TARGET, SPAN;
+  function applyZone(i) {
+    zi = i;
+    JST = ZONES[i][1] * 3600e3;
+    START = Date.UTC(2026, 0, 1) - JST;
+    TARGET = Date.UTC(2027, 0, 1) - JST;
+    SPAN = TARGET - START;
+  }
+  applyZone(0);
+
+  var $ = function (id) { return document.getElementById(id); };
+  var els = { d: $('d'), h: $('h'), m: $('m'), s: $('s') };
+  var pad = function (n) { return n < 10 ? '0' + n : '' + n; };
+
+  // 桁ごとに更新し、変わった桁だけ動かす
+  function setNum(el, text) {
+    if (el.dataset.v === text) return;
+    el.dataset.v = text;
+    while (el.children.length < text.length) el.appendChild(document.createElement('span'));
+    while (el.children.length > text.length) el.removeChild(el.lastChild);
+    for (var i = 0; i < text.length; i++) {
+      var sp = el.children[i];
+      if (sp.textContent !== text[i]) {
+        sp.textContent = text[i];
+        sp.classList.remove('tick');
+        void sp.offsetWidth;
+        sp.classList.add('tick');
+      }
+    }
+  }
+
+  // 月の目盛り
+  var months = $('months'), acc = 0, dim = [31,28,31,30,31,30,31,31,30,31,30,31];
+  dim.forEach(function (n, i) {
+    var t = document.createElement('i');
+    t.textContent = (i + 1) + '月';
+    t.style.left = (acc / 365 * 100) + '%';
+    months.appendChild(t);
+    acc += n;
+  });
+
+  var celebrated = false;
+
+  function tick() {
+    var now = Date.now();
+    var j = new Date(now + JST); // getUTC* が日本時間の値になる
+    $('clock').textContent = j.getUTCFullYear() + '/' + pad(j.getUTCMonth() + 1) + '/' + pad(j.getUTCDate()) +
+      ' ' + pad(j.getUTCHours()) + ':' + pad(j.getUTCMinutes()) + ':' + pad(j.getUTCSeconds());
+
+    var rest = TARGET - now;
+    if (rest <= 0) {
+      setNum(els.d, '00'); setNum(els.h, '00'); setNum(els.m, '00'); setNum(els.s, '00');
+      $('pct').textContent = '100.0000%';
+      $('fill').style.transform = 'scaleX(1)';
+      if (!celebrated) {
+        celebrated = true;
+        $('stage').classList.add('done');
+        document.title = 'あけましておめでとうございます';
+        launch(true);
+      }
+      return;
+    }
+    if (celebrated) { // 別の地域に切り替えて、まだ新年前に戻った場合
+      celebrated = false; forever = false; active = false;
+      $('stage').classList.remove('done');
+      document.title = '2027年まで あと';
+    }
+    var sec = Math.floor(rest / 1000);
+    setNum(els.d, pad(Math.floor(sec / 86400)));
+    setNum(els.h, pad(Math.floor(sec % 86400 / 3600)));
+    setNum(els.m, pad(Math.floor(sec % 3600 / 60)));
+    setNum(els.s, pad(sec % 60));
+
+    var r = Math.min(1, Math.max(0, (now - START) / SPAN));
+    $('pct').textContent = (r * 100).toFixed(4) + '%';
+    $('fill').style.transform = 'scaleX(' + r + ')';
+  }
+
+  // ---- 花火 ----
+  var cv = $('fx'), cx = cv.getContext('2d'), W = 0, H = 0;
+  function resize() {
+    var dpr = window.devicePixelRatio || 1;
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  var rockets = [], sparks = [], running = false, active = false, forever = false, stopTimer = 0;
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function palette() {
+    var cs = getComputedStyle(document.documentElement);
+    return [cs.getPropertyValue('--ink').trim(), cs.getPropertyValue('--accent').trim(), '#fff6e2', '#e8531f', '#ffd166'];
+  }
+  var colors = palette();
+  var pick = function () { return colors[Math.floor(Math.random() * colors.length)]; };
+
+  function Rocket() {
+    this.x = W * (0.1 + Math.random() * 0.8); this.y = H;
+    this.vx = (Math.random() - .5) * 1.6; this.vy = -(Math.random() * 3 + 8 + H / 400);
+    this.c = pick(); this.px = this.x; this.py = this.y;
+  }
+  Rocket.prototype.step = function () {
+    this.px = this.x; this.py = this.y;
+    this.x += this.vx; this.y += this.vy; this.vy += .12;
+    cx.strokeStyle = this.c; cx.lineWidth = 2.5; cx.beginPath();
+    cx.moveTo(this.px, this.py); cx.lineTo(this.x, this.y); cx.stroke();
+    if (this.vy >= -1) {
+      for (var i = 0; i < 70; i++) {
+        var a = Math.PI * 2 * i / 70, sp = Math.random() * 4.5 + 1.2;
+        sparks.push({ x: this.x, y: this.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, a: 1, k: Math.random() * .014 + .01, c: this.c });
+      }
+      return false;
+    }
+    return true;
+  };
+
+  function frame() {
+    cx.clearRect(0, 0, W, H);
+    if (active && Math.random() < .05) rockets.push(new Rocket());
+    rockets = rockets.filter(function (r) { return r.step(); });
+    sparks = sparks.filter(function (p) {
+      p.vx *= .965; p.vy = p.vy * .965 + .045; p.x += p.vx; p.y += p.vy; p.a -= p.k;
+      if (p.a <= 0) return false;
+      cx.globalAlpha = p.a; cx.fillStyle = p.c;
+      cx.beginPath(); cx.arc(p.x, p.y, 2.2, 0, 6.2832); cx.fill();
+      return true;
+    });
+    cx.globalAlpha = 1;
+    if (active || rockets.length || sparks.length) requestAnimationFrame(frame);
+    else running = false;
+  }
+
+  function launch(isForever) {
+    if (reduce) return;
+    colors = palette();
+    if (isForever) forever = true;
+    active = true;
+    for (var i = 0; i < 3; i++) setTimeout(function () { rockets.push(new Rocket()); }, i * 280);
+    if (!running) { running = true; requestAnimationFrame(frame); }
+    clearTimeout(stopTimer);
+    if (!forever) stopTimer = setTimeout(function () { active = false; }, 6000); // 本番の花火は止めない
+  }
+
+  // ---- イースターエッグ: 「日本標準時」を長押しでタイムゾーン切り替え ----
+  var zoneEl = $('zone'), pressTimer = 0;
+  function cancelPress() { clearTimeout(pressTimer); }
+  zoneEl.addEventListener('pointerdown', function () {
+    cancelPress();
+    pressTimer = setTimeout(function () {
+      applyZone((zi + 1) % ZONES.length);
+      zoneEl.textContent = ZONES[zi][0];
+      toast(ZONES[zi][0] + ' の新年までを数えます');
+      tick();
+    }, 600);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (n) { zoneEl.addEventListener(n, cancelPress); });
+  zoneEl.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+
+  // ---- イースターエッグ ----
+  // 1) 見出しの「2027」をタップ／クリックでおみくじ  2) ↑↑↓↓←→←→BA で花火
+  var luck = [
+    ['大吉', '今年は、思い切ったことが全部うまくいきます。'],
+    ['中吉', 'ゆっくりでも、着実に前へ進める一年。'],
+    ['小吉', '小さな幸せを数えると、ちゃんと増えていきます。'],
+    ['吉', 'いつもの道に、いい出会いがあります。'],
+    ['末吉', '後半に伸びます。焦らなくて大丈夫。'],
+    ['凶', '今のうちに厄落とし。あとは上がるだけです。']
+  ];
+  var toastTimer = 0;
+  function toast(html) {
+    var t = $('toast');
+    t.innerHTML = html;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 4200);
+  }
+  $('year').addEventListener('click', function () {
+    var r = luck[Math.floor(Math.random() * luck.length)];
+    toast('<b>' + r[0] + '</b>' + r[1]);
+    if (r[0] === '大吉') launch(false);
+  });
+  var code = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'], pos = 0;
+  window.addEventListener('keydown', function (e) {
+    var k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    pos = (k === code[pos]) ? pos + 1 : (k === code[0] ? 1 : 0);
+    if (pos === code.length) {
+      pos = 0;
+      toast('ひと足早いお祝いです。');
+      launch(false);
+    }
+  });
+
+  tick();
+  setInterval(tick, 200);
+})();
+</script>
+</body>
+</html>
